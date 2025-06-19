@@ -1,3 +1,5 @@
+
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
@@ -11,13 +13,14 @@ import seaborn as sns
 import numpy as np
 
 try:
-    # Updated to load the uploaded Churns (Bank).csv file
-    df = pd.read_csv('Churns (Bank).csv')
-    print("Data loaded successfully from 'Churns (Bank).csv'.")
+    # Changed to load data from a GitHub raw CSV URL
+    github_csv_url = 'https://github.com/sasvanthu/CODSOFT_CUSTOMER-CHURN-PREDICTION/blob/f874155e21f499d6d4f39c3d615b489ed50d9bcf/Churns%20(Bank).csv'
+    df = pd.read_csv(github_csv_url)
+    print(f"Data loaded successfully from GitHub: {github_csv_url}")
     print(df.head())
     print(df.info())
-except FileNotFoundError:
-    print("Error: 'Churns (Bank).csv' not found. Generating a dummy dataset for demonstration.")
+except Exception as e:
+    print(f"Error loading data from GitHub: {e}. Generating a dummy dataset for demonstration.")
     data = {
         'customer_id': range(1, 1001),
         'age': np.random.randint(18, 70, 1000),
@@ -37,12 +40,11 @@ except FileNotFoundError:
     print(df.head())
     print(df.info())
 
-# Updated TARGET to 'Exited' assuming it's the churn column in Churns (Bank).csv
-TARGET = 'Exited' # Common target column name for bank churn datasets
-FEATURES = [col for col in df.columns if col not in ['customer_id', 'RowNumber', 'Surname', TARGET]] # Exclude additional non-feature columns
+TARGET = 'churn' # Changed target column name to 'churn'
+FEATURES = [col for col in df.columns if col not in ['customer_id', 'RowNumber', 'Surname', TARGET]]
 
 X = df[FEATURES]
-y = df[TARGET]
+y = df[TARGET] # Use the correct target column name
 
 numerical_features = X.select_dtypes(include=np.number).columns.tolist()
 categorical_features = X.select_dtypes(include='object').columns.tolist()
@@ -130,9 +132,9 @@ print(f"ROC AUC: {results[best_model_name]['roc_auc']:.4f}")
 if best_model_name in ['Random Forest', 'Gradient Boosting']:
     best_tree_model = results[best_model_name]['model'].named_steps['classifier']
 
-    transformed_features_names = []
-    dummy_row_data = {col: [0 if col in numerical_features else 'dummy_cat' for col in FEATURES]}
-    dummy_df = pd.DataFrame(dummy_row_data)
+    # The code for feature importance here assumes the columns in X after transformation
+    # retain a clear mapping to the original feature names.
+    # For OneHotEncoder, this is handled by get_feature_names_out().
 
     onehot_encoder = results[best_model_name]['model'].named_steps['preprocessor'].named_transformers_['cat']
     ohe_feature_names = onehot_encoder.get_feature_names_out(categorical_features)
@@ -169,3 +171,4 @@ elif best_model_name == 'Logistic Regression':
     plt.xlabel('Coefficient Value')
     plt.ylabel('Feature')
     plt.show()
+     
